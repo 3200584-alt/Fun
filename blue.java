@@ -1,6 +1,6 @@
 public class blue
 {
   public static void main(String[] args) {
-    System.out.println("Yung kai");
+    System.out.println(" Yung kai ");
   }
 }

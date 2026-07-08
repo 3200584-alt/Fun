@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ElectroShop</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f9; }
+    .product { border: 1px solid #ccc; padding: 10px; margin: 10px; width: 200px; display: inline-block; cursor: pointer; transition: 0.3s; }
+    .product:hover { transform: scale(1.05); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+    .product img { width: 100%; height: 150px; object-fit: cover; }
+    .cart { margin-top: 20px; border: 2px solid #333; padding: 10px; }
+    .details-page { display: none; background: white; border: 2px solid #333; padding: 20px; margin: 20px 0; border-radius: 10px; }
+    .details-page h2 { margin-top: 0; }
+    .detail-feature { margin: 5px 0; padding-left: 15px; }
+    .btn { background: #007bff; color: white; padding: 5px 10px; border: none; cursor: pointer; }
+    .btn:hover { background: #0056b3; }
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; justify-content: center; align-items: center; }
+    .modal-content { background: linear-gradient(135deg, #667eea 0%, #631fa6 100%); padding: 40px; border-radius: 15px; max-width: 600px; width: 90%; color: white; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+    .modal-content h2 { font-size: 2.5em; margin: 0 0 15px 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+    .modal-content img { width: 100%; height: 300px; object-fit: cover; border-radius: 10px; margin: 15px 0; }
+    .modal-content p { font-size: 1.1em; margin: 0 0 10px 0; }
+    .offer-badge { background: #ff6b6b; padding: 10px 15px; border-radius: 5px; display: inline-block; font-weight: bold; margin: 10px 0; }
+    .colors-list { margin: 15px 0; }
+    .color-item { display: inline-block; padding: 5px 10px; background: rgba(255,255,255,0.2); margin: 5px; border-radius: 5px; }
+    .modal-buttons { margin-top: 20px; }
+    .close-btn { background: #ff6b6b; padding: 10px 20px; border: none; color: white; cursor: pointer; border-radius: 5px; margin-right: 10px; font-size: 1em; }
+    .close-btn:hover { background: #ff5252; }
+    .add-btn { background: #4caf50; padding: 10px 20px; border: none; color: white; cursor: pointer; border-radius: 5px; font-size: 1em; }
+    .add-btn:hover { background: #45a049; }
+  </style>
+</head>
+<body>
+  <h1>🛒 ElectroShop</h1>
+  <button class="btn" onclick="window.history.back()">Back</button>
+  <div id="products-container">
+    <div id="products"></div>
+  </div>
+
+  <div id="product-details" class="details-page">
+    <button class="btn" onclick="closeDetails()">Back to Catalog</button>
+    <h2 id="detail-name"></h2>
+    <p id="detail-company"></p>
+    <p id="detail-size"></p>
+    <p id="detail-price"></p>
+    <div>
+      <strong>Features:</strong>
+      <ul id="detail-features"></ul>
+    </div>
+
+  </div>
+
+  <div class="cart">
+    <h2>Cart</h2>
+    <ul id="cart-items"></ul>
+  </div>
+
+
+
+  <script>
+    // Product list
+    const products = [
+      { name: "Smartphone X1", price: 15000, img: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=600&q=80", colors: ["Black", "Blue"], offer: "10% off", size: "6.5 inch display", company: "ElectroTech", features: ["6GB RAM", "128GB Storage", "48MP Camera"] },
+      { name: "Laptop Pro", price: 55000, img: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=600&q=80", colors: ["Silver", "Gray"], offer: "Free Mouse", size: "15.6 inch display", company: "ProTech", features: ["Intel i7", "16GB RAM", "512GB SSD"] },
+      { name: "Bluetooth Headphones", price: 2000, img: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600&q=80", colors: ["Red", "Black"], offer: "Buy 1 Get 1", size: "One size", company: "SoundMax", features: ["Noise cancellation", "Bluetooth 5.2", "20 hrs battery"] },
+      { name: "Laptop Air", price: 45000, img: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=600&q=80", colors: ["Silver", "Rose"], offer: "15% off", size: "14 inch display", company: "AirTech", features: ["Lightweight", "8GB RAM", "256GB SSD"] },
+      { name: "Smart Watch", price: 8000, img: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&w=600&q=80", colors: ["Black", "White"], offer: "Free Strap", size: "1.78 inch display", company: "WristWare", features: ["Heart rate monitor", "GPS", "Water resistant"] },
+      { name: "Mobile Phone M8", price: 12000, img: "https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?auto=format&fit=crop&w=600&q=80", colors: ["Blue", "White"], offer: "10% cashback", size: "6.2 inch display", company: "Mobility Inc", features: ["Dual SIM", "Fast charging", "48MP Camera"] },
+      { name: "LED Light Panel", price: 1500, img: "https://images.unsplash.com/photo-1519710164239-da123dc03ef4?auto=format&fit=crop&w=600&q=80", colors: ["White", "Warm"], offer: "Buy 2 Save 10%", size: "12x12 inch", company: "BrightLite", features: ["Dimmable", "Energy saving", "Easy install"] },
+      { name: "4K Smart TV", price: 65000, img: "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&w=600&q=80", colors: ["Black"], offer: "Free Wall Mount", size: "55 inch", company: "VisionElectro", features: ["4K UHD", "Smart OS", "HDR"] },
+      { name: "Wireless Charger", price: 1200, img: "https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=600&q=80", colors: ["Black", "White"], offer: "Free Cable", size: "10W", company: "ChargeFlow", features: ["Fast charge", "Qi compatible", "LED indicator"] },
+      { name: "Gaming Console", price: 35000, img: "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?auto=format&fit=crop&w=600&q=80", colors: ["Black"], offer: "Bundle Offer", size: "Compact", company: "GameCore", features: ["4K gaming", "Wi-Fi", "2 controllers"] },
+      { name: "Portable Speaker", price: 3500, img: "https://images.unsplash.com/photo-1518444065439-e933c06ce9cd?auto=format&fit=crop&w=600&q=80", colors: ["Blue", "Red"], offer: "20% off", size: "8 inch", company: "BeatBox", features: ["Bluetooth", "Waterproof", "12 hrs playtime"] },
+      { name: "DSLR Camera", price: 47000, img: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=600&q=80", colors: ["Black"], offer: "Free Tripod", size: "Full frame", company: "PhotoPro", features: ["24MP", "4K video", "Interchangeable lens"] }
+    ];
+
+    const cart = [];
+
+    const productContainer = document.getElementById("products");
+    const detailsSection = document.getElementById("product-details");
+    const detailName = document.getElementById("detail-name");
+    const detailCompany = document.getElementById("detail-company");
+    const detailSize = document.getElementById("detail-size");
+    const detailPrice = document.getElementById("detail-price");
+    const detailFeatures = document.getElementById("detail-features");
+
+    products.forEach((p, index) => {
+      const div = document.createElement("div");
+      div.className = "product";
+      div.innerHTML = `
+        <img src="${p.img}" alt="${p.name}">
+        <h3>${p.name}</h3>
+        <p>Price: ₹${p.price}</p>
+        <p>Colors: ${p.colors.join(", ")}</p>
+        <p>Offer: ${p.offer}</p>
+        <button class="btn" onclick="viewProduct(${index})">View Details</button>
+        <button class="btn" onclick="addToCart(${index})">Add to Cart</button>
+      `;
+      productContainer.appendChild(div);
+    });
+
+    function addToCart(index) {
+      cart.push(products[index]);
+      renderCart();
+    }
+
+    function viewProduct(index) {
+      currentProductIndex = index;
+      const product = products[index];
+      detailName.textContent = product.name;
+      detailCompany.textContent = `Company: ${product.company}`;
+      detailSize.textContent = `Size: ${product.size}`;
+      detailPrice.textContent = `Price: ₹${product.price}`;
+      detailFeatures.innerHTML = "";
+      product.features.forEach(feature => {
+        const li = document.createElement("li");
+        li.className = "detail-feature";
+        li.textContent = feature;
+        detailFeatures.appendChild(li);
+      });
+      detailsSection.style.display = "block";
+      window.scrollTo(0, detailsSection.offsetTop - 20);
+    }
+
+    let currentProductIndex = -1;
+
+    function closeDetails() {
+      detailsSection.style.display = "none";
+    }
+
+    function renderCart() {
+      const cartList = document.getElementById("cart-items");
+      cartList.innerHTML = "";
+      cart.forEach(item => {
+        const li = document.createElement("li");
+        li.textContent = `${item.name} - ₹${item.price}`;
+        cartList.appendChild(li);
+      });
+    }
+
+
+  </script>
+</body>
+</html>
